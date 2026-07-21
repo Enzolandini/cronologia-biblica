@@ -42,7 +42,7 @@
         <div class="max-w-md mx-auto px-4 py-3 flex justify-between items-center">
             <div>
                 <h1 class="text-xl font-bold text-gray-800">Leitura Bíblica</h1>
-                <p class="text-xs text-emerald-600 font-semibold">Bíblia Toda em 365 Dias</p>
+                <p id="appSubtitle" class="text-xs text-emerald-600 font-semibold">Bíblia Toda em 365 Dias</p>
             </div>
             <button onclick="toggleSettings()" class="text-gray-500 hover:text-emerald-600 p-2">
                 <i class="fas fa-cog text-xl"></i>
@@ -61,6 +61,12 @@
                 <i class="fas fa-sliders-h text-emerald-500"></i> Ajustes
             </h2>
             
+            <label class="block text-sm font-medium text-gray-700 mb-1">Modo de Leitura</label>
+            <div class="flex gap-2 mb-4">
+                <button id="modeStandardBtn" onclick="setMode('standard')" class="flex-1 py-2 px-2 rounded-lg text-sm font-semibold border transition-colors">Padrão (2-3 cap/dia)</button>
+                <button id="modeOneChapterBtn" onclick="setMode('oneChapter')" class="flex-1 py-2 px-2 rounded-lg text-sm font-semibold border transition-colors">1 Capítulo/Dia</button>
+            </div>
+
             <label class="block text-sm font-medium text-gray-700 mb-1">Data de Início</label>
             <input type="date" id="startDateInput" class="w-full border-gray-300 border rounded-lg p-3 mb-4 focus:ring-2 focus:ring-emerald-500 outline-none text-gray-700 font-mono">
             
@@ -101,8 +107,8 @@
     </div>
 
 <script>
-    // --- DADOS DO PLANO (HARMONIA DOS EVANGELHOS + RESTANTE) ---
-    const rawPlan = [
+    // --- PLANO PADRÃO (2-3 capítulos por dia, ~295 dias) ---
+    const planStandard = [
         // --- VIDA DE JESUS CRONOLÓGICA (HARMONIA) ---
         {t: "A Eternidade e o Nascimento: Jo 1, Lc 1, Mt 1"},
         {t: "Infância e Juventude: Lc 2, Mt 2"},
@@ -221,20 +227,381 @@
         {t: "Salmo 1 e 150 (Conclusão)"}
     ];
 
-    const plan = [...rawPlan];
-    
+    // --- PLANO DE 1 CAPÍTULO POR DIA (mesma cronologia, ~1231 dias) ---
+    const planOneChapter = [
+
+        // --- VIDA DE JESUS CRONOLÓGICA (HARMONIA DOS EVANGELHOS) ---
+        {t: "João 1"}, {t: "Lucas 1"}, {t: "Mateus 1"}, {t: "Lucas 2"},
+        {t: "Mateus 2"}, {t: "Mateus 3"}, {t: "Marcos 1"}, {t: "Lucas 3"},
+        {t: "Mateus 4"}, {t: "Lucas 4"}, {t: "João 1:19-51"}, {t: "João 2"},
+        {t: "João 3"}, {t: "João 4"}, {t: "Lucas 5"}, {t: "Marcos 2"},
+        {t: "João 5"}, {t: "Mateus 12:1-21"}, {t: "Marcos 3"}, {t: "Lucas 6"},
+        {t: "Mateus 5"}, {t: "Mateus 6"}, {t: "Mateus 7"}, {t: "Mateus 8"},
+        {t: "Lucas 7"}, {t: "Lucas 8"}, {t: "Mateus 13"}, {t: "Marcos 4"},
+        {t: "Marcos 5"}, {t: "Mateus 9"}, {t: "Mateus 10"}, {t: "Mateus 14"},
+        {t: "Marcos 6"}, {t: "Lucas 9"}, {t: "João 6"}, {t: "Mateus 15"},
+        {t: "Marcos 7"}, {t: "Mateus 16"}, {t: "Marcos 8"}, {t: "Mateus 17"},
+        {t: "Marcos 9"}, {t: "Lucas 9:28-62"}, {t: "João 7"}, {t: "João 8"},
+        {t: "João 9"}, {t: "João 10"}, {t: "Lucas 10"}, {t: "Lucas 11"},
+        {t: "Lucas 12"}, {t: "Lucas 13"}, {t: "Lucas 14"}, {t: "Lucas 15"},
+        {t: "Lucas 16"}, {t: "Lucas 17"}, {t: "João 11"}, {t: "Mateus 19"},
+        {t: "Mateus 20"}, {t: "Lucas 18"}, {t: "Lucas 19"}, {t: "Mateus 21"},
+        {t: "Marcos 11"}, {t: "João 12"}, {t: "Mateus 22"}, {t: "Mateus 23"},
+        {t: "Marcos 12"}, {t: "Lucas 20"}, {t: "Mateus 24"}, {t: "Mateus 25"},
+        {t: "Marcos 13"}, {t: "Lucas 21"}, {t: "Mateus 26"}, {t: "Marcos 14"},
+        {t: "Lucas 22"}, {t: "João 13"}, {t: "João 14"}, {t: "João 15"},
+        {t: "João 16"}, {t: "João 17"}, {t: "João 18"}, {t: "João 19"},
+        {t: "Mateus 27:1-31"}, {t: "Marcos 15"}, {t: "Lucas 23"}, {t: "Mateus 27:32-66"},
+        {t: "Mateus 28"}, {t: "Marcos 16"}, {t: "Lucas 24"}, {t: "João 20"},
+        {t: "João 21"}, {t: "Atos 1"},
+
+        // --- FASE 1: NT (A IGREJA E CARTAS) ---
+        {t: "Atos 2"}, {t: "Atos 3"}, {t: "Atos 4"}, {t: "Atos 5"},
+        {t: "Atos 6"}, {t: "Atos 7"}, {t: "Atos 8"}, {t: "Atos 9"},
+        {t: "Atos 10"}, {t: "Atos 11"}, {t: "Atos 12"}, {t: "Atos 13"},
+        {t: "Atos 14"}, {t: "Atos 15"}, {t: "Atos 16"}, {t: "Atos 17"},
+        {t: "Atos 18"}, {t: "Atos 19"}, {t: "Atos 20"}, {t: "Atos 21"},
+        {t: "Atos 22"}, {t: "Atos 23"}, {t: "Atos 24"}, {t: "Atos 25"},
+        {t: "Atos 26"}, {t: "Atos 27"}, {t: "Atos 28"}, {t: "Romanos 1"},
+        {t: "Romanos 2"}, {t: "Romanos 3"}, {t: "Romanos 4"}, {t: "Romanos 5"},
+        {t: "Romanos 6"}, {t: "Romanos 7"}, {t: "Romanos 8"}, {t: "Romanos 9"},
+        {t: "Romanos 10"}, {t: "Romanos 11"}, {t: "Romanos 12"}, {t: "Romanos 13"},
+        {t: "Romanos 14"}, {t: "Romanos 15"}, {t: "Romanos 16"}, {t: "1 Coríntios 1"},
+        {t: "1 Coríntios 2"}, {t: "1 Coríntios 3"}, {t: "1 Coríntios 4"}, {t: "1 Coríntios 5"},
+        {t: "1 Coríntios 6"}, {t: "1 Coríntios 7"}, {t: "1 Coríntios 8"}, {t: "1 Coríntios 9"},
+        {t: "1 Coríntios 10"}, {t: "1 Coríntios 11"}, {t: "1 Coríntios 12"}, {t: "1 Coríntios 13"},
+        {t: "1 Coríntios 14"}, {t: "1 Coríntios 15"}, {t: "1 Coríntios 16"}, {t: "2 Coríntios 1"},
+        {t: "2 Coríntios 2"}, {t: "2 Coríntios 3"}, {t: "2 Coríntios 4"}, {t: "2 Coríntios 5"},
+        {t: "2 Coríntios 6"}, {t: "2 Coríntios 7"}, {t: "2 Coríntios 8"}, {t: "2 Coríntios 9"},
+        {t: "2 Coríntios 10"}, {t: "2 Coríntios 11"}, {t: "2 Coríntios 12"}, {t: "2 Coríntios 13"},
+        {t: "Gálatas 1"}, {t: "Gálatas 2"}, {t: "Gálatas 3"}, {t: "Gálatas 4"},
+        {t: "Gálatas 5"}, {t: "Gálatas 6"}, {t: "Efésios 1"}, {t: "Efésios 2"},
+        {t: "Efésios 3"}, {t: "Efésios 4"}, {t: "Efésios 5"}, {t: "Efésios 6"},
+        {t: "Filipenses 1"}, {t: "Filipenses 2"}, {t: "Filipenses 3"}, {t: "Filipenses 4"},
+        {t: "Colossenses 1"}, {t: "Colossenses 2"}, {t: "Colossenses 3"}, {t: "Colossenses 4"},
+        {t: "1 Tessalonicenses 1"}, {t: "1 Tessalonicenses 2"}, {t: "1 Tessalonicenses 3"}, {t: "1 Tessalonicenses 4"},
+        {t: "1 Tessalonicenses 5"}, {t: "2 Tessalonicenses 1"}, {t: "2 Tessalonicenses 2"}, {t: "2 Tessalonicenses 3"},
+        {t: "1 Timóteo 1"}, {t: "1 Timóteo 2"}, {t: "1 Timóteo 3"}, {t: "1 Timóteo 4"},
+        {t: "1 Timóteo 5"}, {t: "1 Timóteo 6"}, {t: "2 Timóteo 1"}, {t: "2 Timóteo 2"},
+        {t: "2 Timóteo 3"}, {t: "2 Timóteo 4"}, {t: "Tito 1"}, {t: "Tito 2"},
+        {t: "Tito 3"}, {t: "Filemom 1"}, {t: "Hebreus 1"}, {t: "Hebreus 2"},
+        {t: "Hebreus 3"}, {t: "Hebreus 4"}, {t: "Hebreus 5"}, {t: "Hebreus 6"},
+        {t: "Hebreus 7"}, {t: "Hebreus 8"}, {t: "Hebreus 9"}, {t: "Hebreus 10"},
+        {t: "Hebreus 11"}, {t: "Hebreus 12"}, {t: "Hebreus 13"}, {t: "Tiago 1"},
+        {t: "Tiago 2"}, {t: "Tiago 3"}, {t: "Tiago 4"}, {t: "Tiago 5"},
+        {t: "1 Pedro 1"}, {t: "1 Pedro 2"}, {t: "1 Pedro 3"}, {t: "1 Pedro 4"},
+        {t: "1 Pedro 5"}, {t: "2 Pedro 1"}, {t: "2 Pedro 2"}, {t: "2 Pedro 3"},
+        {t: "Judas 1"}, {t: "1 João 1"}, {t: "1 João 2"}, {t: "1 João 3"},
+        {t: "1 João 4"}, {t: "1 João 5"}, {t: "2 João 1"}, {t: "3 João 1"},
+        {t: "Apocalipse 1"}, {t: "Apocalipse 2"}, {t: "Apocalipse 3"}, {t: "Apocalipse 4"},
+        {t: "Apocalipse 5"}, {t: "Apocalipse 6"}, {t: "Apocalipse 7"}, {t: "Apocalipse 8"},
+        {t: "Apocalipse 9"}, {t: "Apocalipse 10"}, {t: "Apocalipse 11"}, {t: "Apocalipse 12"},
+        {t: "Apocalipse 13"}, {t: "Apocalipse 14"}, {t: "Apocalipse 15"}, {t: "Apocalipse 16"},
+        {t: "Apocalipse 17"}, {t: "Apocalipse 18"}, {t: "Apocalipse 19"}, {t: "Apocalipse 20"},
+        {t: "Apocalipse 21"}, {t: "Apocalipse 22"},
+
+        // --- FASE 2: PENTATEUCO + JÓ ---
+        {t: "Gênesis 1"}, {t: "Gênesis 2"}, {t: "Gênesis 3"}, {t: "Gênesis 4"},
+        {t: "Gênesis 5"}, {t: "Gênesis 6"}, {t: "Gênesis 7"}, {t: "Gênesis 8"},
+        {t: "Gênesis 9"}, {t: "Gênesis 10"}, {t: "Gênesis 11"}, {t: "Gênesis 12"},
+        {t: "Gênesis 13"}, {t: "Gênesis 14"}, {t: "Gênesis 15"}, {t: "Gênesis 16"},
+        {t: "Gênesis 17"}, {t: "Gênesis 18"}, {t: "Gênesis 19"}, {t: "Gênesis 20"},
+        {t: "Gênesis 21"}, {t: "Gênesis 22"}, {t: "Gênesis 23"}, {t: "Gênesis 24"},
+        {t: "Gênesis 25"}, {t: "Gênesis 26"}, {t: "Gênesis 27"}, {t: "Gênesis 28"},
+        {t: "Gênesis 29"}, {t: "Gênesis 30"}, {t: "Gênesis 31"}, {t: "Gênesis 32"},
+        {t: "Gênesis 33"}, {t: "Gênesis 34"}, {t: "Gênesis 35"}, {t: "Gênesis 36"},
+        {t: "Gênesis 37"}, {t: "Gênesis 38"}, {t: "Gênesis 39"}, {t: "Gênesis 40"},
+        {t: "Gênesis 41"}, {t: "Gênesis 42"}, {t: "Gênesis 43"}, {t: "Gênesis 44"},
+        {t: "Gênesis 45"}, {t: "Gênesis 46"}, {t: "Gênesis 47"}, {t: "Gênesis 48"},
+        {t: "Gênesis 49"}, {t: "Gênesis 50"}, {t: "Jó 1"}, {t: "Jó 2"},
+        {t: "Jó 3"}, {t: "Jó 4"}, {t: "Jó 5"}, {t: "Jó 6"},
+        {t: "Jó 7"}, {t: "Jó 8"}, {t: "Jó 9"}, {t: "Jó 10"},
+        {t: "Jó 11"}, {t: "Jó 12"}, {t: "Jó 13"}, {t: "Jó 14"},
+        {t: "Jó 15"}, {t: "Jó 16"}, {t: "Jó 17"}, {t: "Jó 18"},
+        {t: "Jó 19"}, {t: "Jó 20"}, {t: "Jó 21"}, {t: "Jó 22"},
+        {t: "Jó 23"}, {t: "Jó 24"}, {t: "Jó 25"}, {t: "Jó 26"},
+        {t: "Jó 27"}, {t: "Jó 28"}, {t: "Jó 29"}, {t: "Jó 30"},
+        {t: "Jó 31"}, {t: "Jó 32"}, {t: "Jó 33"}, {t: "Jó 34"},
+        {t: "Jó 35"}, {t: "Jó 36"}, {t: "Jó 37"}, {t: "Jó 38"},
+        {t: "Jó 39"}, {t: "Jó 40"}, {t: "Jó 41"}, {t: "Jó 42"},
+        {t: "Êxodo 1"}, {t: "Êxodo 2"}, {t: "Êxodo 3"}, {t: "Êxodo 4"},
+        {t: "Êxodo 5"}, {t: "Êxodo 6"}, {t: "Êxodo 7"}, {t: "Êxodo 8"},
+        {t: "Êxodo 9"}, {t: "Êxodo 10"}, {t: "Êxodo 11"}, {t: "Êxodo 12"},
+        {t: "Êxodo 13"}, {t: "Êxodo 14"}, {t: "Êxodo 15"}, {t: "Êxodo 16"},
+        {t: "Êxodo 17"}, {t: "Êxodo 18"}, {t: "Êxodo 19"}, {t: "Êxodo 20"},
+        {t: "Êxodo 21"}, {t: "Êxodo 22"}, {t: "Êxodo 23"}, {t: "Êxodo 24"},
+        {t: "Êxodo 25"}, {t: "Êxodo 26"}, {t: "Êxodo 27"}, {t: "Êxodo 28"},
+        {t: "Êxodo 29"}, {t: "Êxodo 30"}, {t: "Êxodo 31"}, {t: "Êxodo 32"},
+        {t: "Êxodo 33"}, {t: "Êxodo 34"}, {t: "Êxodo 35"}, {t: "Êxodo 36"},
+        {t: "Êxodo 37"}, {t: "Êxodo 38"}, {t: "Êxodo 39"}, {t: "Êxodo 40"},
+        {t: "Levítico 1"}, {t: "Levítico 2"}, {t: "Levítico 3"}, {t: "Levítico 4"},
+        {t: "Levítico 5"}, {t: "Levítico 6"}, {t: "Levítico 7"}, {t: "Levítico 8"},
+        {t: "Levítico 9"}, {t: "Levítico 10"}, {t: "Levítico 11"}, {t: "Levítico 12"},
+        {t: "Levítico 13"}, {t: "Levítico 14"}, {t: "Levítico 15"}, {t: "Levítico 16"},
+        {t: "Levítico 17"}, {t: "Levítico 18"}, {t: "Levítico 19"}, {t: "Levítico 20"},
+        {t: "Levítico 21"}, {t: "Levítico 22"}, {t: "Levítico 23"}, {t: "Levítico 24"},
+        {t: "Levítico 25"}, {t: "Levítico 26"}, {t: "Levítico 27"}, {t: "Números 1"},
+        {t: "Números 2"}, {t: "Números 3"}, {t: "Números 4"}, {t: "Números 5"},
+        {t: "Números 6"}, {t: "Números 7"}, {t: "Números 8"}, {t: "Números 9"},
+        {t: "Números 10"}, {t: "Números 11"}, {t: "Números 12"}, {t: "Números 13"},
+        {t: "Números 14"}, {t: "Números 15"}, {t: "Números 16"}, {t: "Números 17"},
+        {t: "Números 18"}, {t: "Números 19"}, {t: "Números 20"}, {t: "Números 21"},
+        {t: "Números 22"}, {t: "Números 23"}, {t: "Números 24"}, {t: "Números 25"},
+        {t: "Números 26"}, {t: "Números 27"}, {t: "Números 28"}, {t: "Números 29"},
+        {t: "Números 30"}, {t: "Números 31"}, {t: "Números 32"}, {t: "Números 33"},
+        {t: "Números 34"}, {t: "Números 35"}, {t: "Números 36"}, {t: "Deuteronômio 1"},
+        {t: "Deuteronômio 2"}, {t: "Deuteronômio 3"}, {t: "Deuteronômio 4"}, {t: "Deuteronômio 5"},
+        {t: "Deuteronômio 6"}, {t: "Deuteronômio 7"}, {t: "Deuteronômio 8"}, {t: "Deuteronômio 9"},
+        {t: "Deuteronômio 10"}, {t: "Deuteronômio 11"}, {t: "Deuteronômio 12"}, {t: "Deuteronômio 13"},
+        {t: "Deuteronômio 14"}, {t: "Deuteronômio 15"}, {t: "Deuteronômio 16"}, {t: "Deuteronômio 17"},
+        {t: "Deuteronômio 18"}, {t: "Deuteronômio 19"}, {t: "Deuteronômio 20"}, {t: "Deuteronômio 21"},
+        {t: "Deuteronômio 22"}, {t: "Deuteronômio 23"}, {t: "Deuteronômio 24"}, {t: "Deuteronômio 25"},
+        {t: "Deuteronômio 26"}, {t: "Deuteronômio 27"}, {t: "Deuteronômio 28"}, {t: "Deuteronômio 29"},
+        {t: "Deuteronômio 30"}, {t: "Deuteronômio 31"}, {t: "Deuteronômio 32"}, {t: "Deuteronômio 33"},
+        {t: "Deuteronômio 34"},
+
+        // --- FASE 3: HISTÓRIA CRONOLÓGICA (Conquista e Juízes) ---
+        {t: "Josué 1"}, {t: "Josué 2"}, {t: "Josué 3"}, {t: "Josué 4"},
+        {t: "Josué 5"}, {t: "Josué 6"}, {t: "Josué 7"}, {t: "Josué 8"},
+        {t: "Josué 9"}, {t: "Josué 10"}, {t: "Josué 11"}, {t: "Josué 12"},
+        {t: "Josué 13"}, {t: "Josué 14"}, {t: "Josué 15"}, {t: "Josué 16"},
+        {t: "Josué 17"}, {t: "Josué 18"}, {t: "Josué 19"}, {t: "Josué 20"},
+        {t: "Josué 21"}, {t: "Josué 22"}, {t: "Josué 23"}, {t: "Josué 24"},
+        {t: "Juízes 1"}, {t: "Juízes 2"}, {t: "Juízes 3"}, {t: "Juízes 4"},
+        {t: "Juízes 5"}, {t: "Juízes 6"}, {t: "Juízes 7"}, {t: "Juízes 8"},
+        {t: "Juízes 9"}, {t: "Juízes 10"}, {t: "Juízes 11"}, {t: "Juízes 12"},
+        {t: "Juízes 13"}, {t: "Juízes 14"}, {t: "Juízes 15"}, {t: "Juízes 16"},
+        {t: "Juízes 17"}, {t: "Juízes 18"}, {t: "Juízes 19"}, {t: "Juízes 20"},
+        {t: "Juízes 21"}, {t: "Rute 1"}, {t: "Rute 2"}, {t: "Rute 3"},
+        {t: "Rute 4"},
+
+        // --- FASE 3: REINO UNIDO (Davi: Samuel, Crônicas, Salmos) ---
+        {t: "1 Samuel 1"}, {t: "1 Samuel 2"}, {t: "1 Samuel 3"}, {t: "1 Samuel 4"},
+        {t: "1 Samuel 5"}, {t: "1 Samuel 6"}, {t: "1 Samuel 7"}, {t: "1 Samuel 8"},
+        {t: "1 Samuel 9"}, {t: "1 Samuel 10"}, {t: "1 Samuel 11"}, {t: "1 Samuel 12"},
+        {t: "1 Samuel 13"}, {t: "1 Samuel 14"}, {t: "1 Samuel 15"}, {t: "1 Samuel 16"},
+        {t: "1 Samuel 17"}, {t: "1 Samuel 18"}, {t: "Salmos 11"}, {t: "Salmos 59"},
+        {t: "1 Samuel 19"}, {t: "1 Samuel 20"}, {t: "1 Samuel 21"}, {t: "Salmos 23"},
+        {t: "Salmos 34"}, {t: "Salmos 56"}, {t: "1 Samuel 22"}, {t: "1 Samuel 23"},
+        {t: "1 Samuel 24"}, {t: "Salmos 52"}, {t: "Salmos 57"}, {t: "Salmos 142"},
+        {t: "1 Samuel 25"}, {t: "1 Samuel 26"}, {t: "1 Samuel 27"}, {t: "Salmos 54"},
+        {t: "Salmos 63"}, {t: "1 Samuel 28"}, {t: "1 Samuel 29"}, {t: "1 Samuel 30"},
+        {t: "1 Samuel 31"}, {t: "Salmos 18"}, {t: "2 Samuel 1"}, {t: "2 Samuel 2"},
+        {t: "2 Samuel 3"}, {t: "Salmos 101"}, {t: "2 Samuel 4"}, {t: "2 Samuel 5"},
+        {t: "2 Samuel 6"}, {t: "Salmos 68"}, {t: "Salmos 132"}, {t: "Salmos 133"},
+        {t: "1 Crônicas 1"}, {t: "1 Crônicas 2"}, {t: "1 Crônicas 3"}, {t: "1 Crônicas 4"},
+        {t: "1 Crônicas 5"}, {t: "1 Crônicas 6"}, {t: "1 Crônicas 7"}, {t: "1 Crônicas 8"},
+        {t: "1 Crônicas 9"}, {t: "1 Crônicas 10"}, {t: "1 Crônicas 11"}, {t: "1 Crônicas 12"},
+        {t: "Salmos 108"}, {t: "1 Crônicas 13"}, {t: "1 Crônicas 14"}, {t: "1 Crônicas 15"},
+        {t: "1 Crônicas 16"}, {t: "Salmos 24"}, {t: "Salmos 96"}, {t: "Salmos 1"},
+        {t: "Salmos 2"}, {t: "Salmos 3"}, {t: "Salmos 4"}, {t: "Salmos 5"},
+        {t: "Salmos 6"}, {t: "Salmos 7"}, {t: "Salmos 8"}, {t: "Salmos 9"},
+        {t: "Salmos 10"}, {t: "Salmos 11"}, {t: "Salmos 12"}, {t: "Salmos 13"},
+        {t: "Salmos 14"}, {t: "Salmos 15"}, {t: "Salmos 16"}, {t: "Salmos 17"},
+        {t: "Salmos 18"}, {t: "Salmos 19"}, {t: "Salmos 20"}, {t: "Salmos 21"},
+        {t: "Salmos 22"}, {t: "Salmos 23"}, {t: "Salmos 24"}, {t: "Salmos 25"},
+        {t: "Salmos 26"}, {t: "Salmos 27"}, {t: "Salmos 28"}, {t: "Salmos 29"},
+        {t: "Salmos 30"}, {t: "Salmos 31"}, {t: "Salmos 32"}, {t: "Salmos 33"},
+        {t: "Salmos 34"}, {t: "Salmos 35"}, {t: "Salmos 36"}, {t: "Salmos 37"},
+        {t: "Salmos 38"}, {t: "Salmos 39"}, {t: "Salmos 40"}, {t: "Salmos 41"},
+        {t: "2 Samuel 7"}, {t: "2 Samuel 8"}, {t: "2 Samuel 9"}, {t: "1 Crônicas 17"},
+        {t: "1 Crônicas 18"}, {t: "2 Samuel 10"}, {t: "1 Crônicas 19"}, {t: "Salmos 20"},
+        {t: "2 Samuel 11"}, {t: "2 Samuel 12"}, {t: "1 Crônicas 20"}, {t: "Salmos 32"},
+        {t: "Salmos 51"}, {t: "2 Samuel 13"}, {t: "2 Samuel 14"}, {t: "2 Samuel 15"},
+        {t: "Salmos 3"}, {t: "Salmos 61"}, {t: "2 Samuel 16"}, {t: "2 Samuel 17"},
+        {t: "2 Samuel 18"}, {t: "Salmos 7"}, {t: "Salmos 12"}, {t: "Salmos 13"},
+        {t: "2 Samuel 19"}, {t: "2 Samuel 20"}, {t: "2 Samuel 21"}, {t: "Salmos 55"},
+        {t: "2 Samuel 22"}, {t: "2 Samuel 23"}, {t: "2 Samuel 24"}, {t: "Salmos 4"},
+        {t: "Salmos 42"}, {t: "1 Crônicas 21"}, {t: "1 Crônicas 22"}, {t: "1 Crônicas 23"},
+        {t: "Salmos 95"}, {t: "Salmos 97"}, {t: "Salmos 98"}, {t: "Salmos 99"},
+        {t: "1 Crônicas 24"}, {t: "1 Crônicas 25"}, {t: "1 Crônicas 26"}, {t: "1 Crônicas 27"},
+        {t: "1 Crônicas 28"}, {t: "1 Crônicas 29"}, {t: "Salmos 127"}, {t: "Salmos 43"},
+        {t: "Salmos 44"}, {t: "Salmos 45"}, {t: "Salmos 46"}, {t: "Salmos 47"},
+        {t: "Salmos 48"}, {t: "Salmos 49"}, {t: "Salmos 50"}, {t: "Salmos 51"},
+        {t: "Salmos 52"}, {t: "Salmos 53"}, {t: "Salmos 54"}, {t: "Salmos 55"},
+        {t: "Salmos 56"}, {t: "Salmos 57"}, {t: "Salmos 58"}, {t: "Salmos 59"},
+        {t: "Salmos 60"}, {t: "Salmos 61"}, {t: "Salmos 62"}, {t: "Salmos 63"},
+        {t: "Salmos 64"}, {t: "Salmos 65"}, {t: "Salmos 66"}, {t: "Salmos 67"},
+        {t: "Salmos 68"}, {t: "Salmos 69"}, {t: "Salmos 70"}, {t: "Salmos 71"},
+        {t: "Salmos 72"}, {t: "Salmos 73"}, {t: "Salmos 74"}, {t: "Salmos 75"},
+        {t: "Salmos 76"}, {t: "Salmos 77"}, {t: "Salmos 78"}, {t: "Salmos 79"},
+        {t: "Salmos 80"}, {t: "Salmos 81"}, {t: "Salmos 82"}, {t: "Salmos 83"},
+        {t: "Salmos 84"}, {t: "Salmos 85"}, {t: "Salmos 86"}, {t: "Salmos 87"},
+        {t: "Salmos 88"}, {t: "Salmos 89"}, {t: "Salmos 90"}, {t: "Salmos 91"},
+        {t: "Salmos 92"}, {t: "Salmos 93"}, {t: "Salmos 94"}, {t: "Salmos 95"},
+        {t: "Salmos 96"}, {t: "Salmos 97"}, {t: "Salmos 98"}, {t: "Salmos 99"},
+        {t: "Salmos 100"}, {t: "Salmos 101"}, {t: "Salmos 102"}, {t: "Salmos 103"},
+        {t: "Salmos 104"}, {t: "Salmos 105"}, {t: "Salmos 106"}, {t: "Salmos 107"},
+        {t: "Salmos 108"}, {t: "Salmos 109"}, {t: "Salmos 110"}, {t: "Salmos 111"},
+        {t: "Salmos 112"}, {t: "Salmos 113"}, {t: "Salmos 114"}, {t: "Salmos 115"},
+        {t: "Salmos 116"}, {t: "Salmos 117"}, {t: "Salmos 118"}, {t: "Salmos 119:1-88"},
+        {t: "Salmos 119:89-176"}, {t: "Salmos 120"}, {t: "Salmos 121"}, {t: "Salmos 122"},
+        {t: "Salmos 123"}, {t: "Salmos 124"}, {t: "Salmos 125"}, {t: "Salmos 126"},
+        {t: "Salmos 127"}, {t: "Salmos 128"}, {t: "Salmos 129"}, {t: "Salmos 130"},
+        {t: "Salmos 131"}, {t: "Salmos 132"}, {t: "Salmos 133"}, {t: "Salmos 134"},
+        {t: "Salmos 135"}, {t: "Salmos 136"}, {t: "Salmos 137"}, {t: "Salmos 138"},
+        {t: "Salmos 139"}, {t: "Salmos 140"}, {t: "Salmos 141"}, {t: "Salmos 142"},
+        {t: "Salmos 143"}, {t: "Salmos 144"}, {t: "Salmos 145"}, {t: "Salmos 146"},
+        {t: "Salmos 147"}, {t: "Salmos 148"}, {t: "Salmos 149"}, {t: "Salmos 150"},
+
+        // --- FASE 3: REINO UNIDO (Salomão) ---
+        {t: "1 Reis 1"}, {t: "1 Reis 2"}, {t: "Salmos 37"}, {t: "Salmos 71"},
+        {t: "Salmos 94"}, {t: "1 Reis 3"}, {t: "1 Reis 4"}, {t: "2 Crônicas 1"},
+        {t: "Salmos 72"}, {t: "Provérbios 1"}, {t: "Provérbios 2"}, {t: "Provérbios 3"},
+        {t: "Provérbios 4"}, {t: "Provérbios 5"}, {t: "Provérbios 6"}, {t: "Provérbios 7"},
+        {t: "Provérbios 8"}, {t: "Provérbios 9"}, {t: "Provérbios 10"}, {t: "Provérbios 11"},
+        {t: "Provérbios 12"}, {t: "Provérbios 13"}, {t: "Provérbios 14"}, {t: "Provérbios 15"},
+        {t: "Provérbios 16"}, {t: "Provérbios 17"}, {t: "Provérbios 18"}, {t: "Provérbios 19"},
+        {t: "Provérbios 20"}, {t: "Provérbios 21"}, {t: "Provérbios 22"}, {t: "Provérbios 23"},
+        {t: "Provérbios 24"}, {t: "Provérbios 25"}, {t: "Provérbios 26"}, {t: "Provérbios 27"},
+        {t: "Provérbios 28"}, {t: "Provérbios 29"}, {t: "Provérbios 30"}, {t: "Provérbios 31"},
+        {t: "Cânticos 1"}, {t: "Cânticos 2"}, {t: "Cânticos 3"}, {t: "Cânticos 4"},
+        {t: "Cânticos 5"}, {t: "Cânticos 6"}, {t: "Cânticos 7"}, {t: "Cânticos 8"},
+        {t: "Eclesiastes 1"}, {t: "Eclesiastes 2"}, {t: "Eclesiastes 3"}, {t: "Eclesiastes 4"},
+        {t: "Eclesiastes 5"}, {t: "Eclesiastes 6"}, {t: "Eclesiastes 7"}, {t: "Eclesiastes 8"},
+        {t: "Eclesiastes 9"}, {t: "Eclesiastes 10"}, {t: "Eclesiastes 11"}, {t: "Eclesiastes 12"},
+        {t: "1 Reis 5"}, {t: "1 Reis 6"}, {t: "1 Reis 7"}, {t: "2 Crônicas 2"},
+        {t: "2 Crônicas 3"}, {t: "2 Crônicas 4"}, {t: "1 Reis 8"}, {t: "2 Crônicas 5"},
+        {t: "2 Crônicas 6"}, {t: "2 Crônicas 7"}, {t: "1 Reis 9"}, {t: "1 Reis 10"},
+        {t: "1 Reis 11"}, {t: "2 Crônicas 8"}, {t: "2 Crônicas 9"},
+
+        // --- FASE 3: REINO DIVIDIDO E PROFETAS (Cronológico) ---
+        {t: "1 Reis 12"}, {t: "1 Reis 13"}, {t: "1 Reis 14"}, {t: "2 Crônicas 10"},
+        {t: "2 Crônicas 11"}, {t: "2 Crônicas 12"}, {t: "1 Reis 15"}, {t: "1 Reis 16"},
+        {t: "2 Crônicas 13"}, {t: "2 Crônicas 14"}, {t: "2 Crônicas 15"}, {t: "2 Crônicas 16"},
+        {t: "1 Reis 17"}, {t: "1 Reis 18"}, {t: "1 Reis 19"}, {t: "1 Reis 20"},
+        {t: "1 Reis 21"}, {t: "1 Reis 22"}, {t: "2 Crônicas 18"}, {t: "Obadias 1"},
+        {t: "2 Crônicas 17"}, {t: "2 Crônicas 19"}, {t: "2 Crônicas 20"}, {t: "2 Reis 1"},
+        {t: "2 Reis 2"}, {t: "2 Reis 3"}, {t: "2 Reis 4"}, {t: "2 Reis 5"},
+        {t: "2 Reis 6"}, {t: "2 Reis 7"}, {t: "2 Reis 8"}, {t: "2 Reis 9"},
+        {t: "2 Reis 10"}, {t: "2 Reis 11"}, {t: "2 Crônicas 21"}, {t: "2 Crônicas 22"},
+        {t: "2 Crônicas 23"}, {t: "Joel 1"}, {t: "Joel 2"}, {t: "Joel 3"},
+        {t: "2 Reis 12"}, {t: "2 Reis 13"}, {t: "2 Crônicas 24"}, {t: "Jonas 1"},
+        {t: "Jonas 2"}, {t: "Jonas 3"}, {t: "Jonas 4"}, {t: "2 Reis 14"},
+        {t: "2 Crônicas 25"}, {t: "Amós 1"}, {t: "Amós 2"}, {t: "Amós 3"},
+        {t: "Amós 4"}, {t: "Amós 5"}, {t: "Amós 6"}, {t: "Amós 7"},
+        {t: "Amós 8"}, {t: "Amós 9"}, {t: "Oseias 1"}, {t: "Oseias 2"},
+        {t: "Oseias 3"}, {t: "Oseias 4"}, {t: "Oseias 5"}, {t: "Oseias 6"},
+        {t: "Oseias 7"}, {t: "Oseias 8"}, {t: "Oseias 9"}, {t: "Oseias 10"},
+        {t: "Oseias 11"}, {t: "Oseias 12"}, {t: "Oseias 13"}, {t: "Oseias 14"},
+        {t: "2 Reis 15"}, {t: "2 Reis 16"}, {t: "2 Crônicas 26"}, {t: "2 Crônicas 27"},
+        {t: "Isaías 1"}, {t: "Isaías 2"}, {t: "Isaías 3"}, {t: "Isaías 4"},
+        {t: "Isaías 5"}, {t: "Isaías 6"}, {t: "Isaías 7"}, {t: "Isaías 8"},
+        {t: "Isaías 9"}, {t: "Isaías 10"}, {t: "Isaías 11"}, {t: "Isaías 12"},
+        {t: "Isaías 13"}, {t: "Isaías 14"}, {t: "Isaías 15"}, {t: "Isaías 16"},
+        {t: "Miqueias 1"}, {t: "Miqueias 2"}, {t: "Miqueias 3"}, {t: "Miqueias 4"},
+        {t: "Miqueias 5"}, {t: "Miqueias 6"}, {t: "Miqueias 7"}, {t: "Isaías 17"},
+        {t: "Isaías 18"}, {t: "Isaías 19"}, {t: "Isaías 20"}, {t: "Isaías 21"},
+        {t: "Isaías 22"}, {t: "Isaías 23"}, {t: "Isaías 24"}, {t: "Isaías 25"},
+        {t: "Isaías 26"}, {t: "Isaías 27"}, {t: "Isaías 28"}, {t: "Isaías 29"},
+        {t: "Isaías 30"}, {t: "Isaías 31"}, {t: "Isaías 32"}, {t: "Isaías 33"},
+        {t: "Isaías 34"}, {t: "Isaías 35"}, {t: "2 Reis 17"}, {t: "2 Crônicas 28"},
+        {t: "2 Reis 18"}, {t: "2 Reis 19"}, {t: "Salmos 46"}, {t: "Salmos 80"},
+        {t: "Isaías 36"}, {t: "Isaías 37"}, {t: "Isaías 38"}, {t: "Isaías 39"},
+        {t: "Isaías 40"}, {t: "Isaías 41"}, {t: "Isaías 42"}, {t: "Isaías 43"},
+        {t: "Isaías 44"}, {t: "Isaías 45"}, {t: "Isaías 46"}, {t: "Isaías 47"},
+        {t: "Isaías 48"}, {t: "Isaías 49"}, {t: "Isaías 50"}, {t: "Isaías 51"},
+        {t: "Isaías 52"}, {t: "Isaías 53"}, {t: "Isaías 54"}, {t: "Isaías 55"},
+        {t: "Isaías 56"}, {t: "Isaías 57"}, {t: "Isaías 58"}, {t: "Isaías 59"},
+        {t: "Isaías 60"}, {t: "Isaías 61"}, {t: "Isaías 62"}, {t: "Isaías 63"},
+        {t: "Isaías 64"}, {t: "Isaías 65"}, {t: "Isaías 66"}, {t: "2 Reis 20"},
+        {t: "2 Reis 21"}, {t: "2 Crônicas 29"}, {t: "2 Crônicas 30"}, {t: "2 Crônicas 31"},
+        {t: "2 Crônicas 32"}, {t: "2 Crônicas 33"}, {t: "Naum 1"}, {t: "Naum 2"},
+        {t: "Naum 3"}, {t: "Sofonias 1"}, {t: "Sofonias 2"}, {t: "Sofonias 3"},
+        {t: "2 Reis 22"}, {t: "2 Reis 23"}, {t: "2 Crônicas 34"}, {t: "2 Crônicas 35"},
+        {t: "Jeremias 1"}, {t: "Jeremias 2"}, {t: "Jeremias 3"}, {t: "Jeremias 4"},
+        {t: "Jeremias 5"}, {t: "Jeremias 6"}, {t: "Jeremias 7"}, {t: "Jeremias 8"},
+        {t: "Jeremias 9"}, {t: "Jeremias 10"}, {t: "Jeremias 11"}, {t: "Jeremias 12"},
+        {t: "Jeremias 13"}, {t: "Jeremias 14"}, {t: "Jeremias 15"}, {t: "Jeremias 16"},
+        {t: "Jeremias 17"}, {t: "Habacuque 1"}, {t: "Habacuque 2"}, {t: "Habacuque 3"},
+        {t: "Jeremias 18"}, {t: "Jeremias 19"}, {t: "Jeremias 20"}, {t: "Jeremias 21"},
+        {t: "Jeremias 22"}, {t: "Jeremias 23"}, {t: "Jeremias 24"}, {t: "Jeremias 25"},
+        {t: "Jeremias 26"}, {t: "Jeremias 27"}, {t: "Jeremias 28"}, {t: "Jeremias 29"},
+        {t: "Jeremias 30"}, {t: "Jeremias 31"}, {t: "Jeremias 32"}, {t: "Jeremias 33"},
+        {t: "Jeremias 34"}, {t: "Jeremias 35"}, {t: "Jeremias 36"}, {t: "Jeremias 37"},
+        {t: "Jeremias 38"}, {t: "Jeremias 39"}, {t: "2 Reis 24"}, {t: "2 Reis 25"},
+        {t: "2 Crônicas 36"}, {t: "Jeremias 40"}, {t: "Jeremias 41"}, {t: "Jeremias 42"},
+        {t: "Jeremias 43"}, {t: "Jeremias 44"}, {t: "Jeremias 45"}, {t: "Jeremias 46"},
+        {t: "Jeremias 47"}, {t: "Jeremias 48"}, {t: "Jeremias 49"}, {t: "Jeremias 50"},
+        {t: "Jeremias 51"}, {t: "Jeremias 52"}, {t: "Lamentações 1"}, {t: "Lamentações 2"},
+        {t: "Lamentações 3"}, {t: "Lamentações 4"}, {t: "Lamentações 5"},
+
+        // --- FASE 3: EXÍLIO ---
+        {t: "Ezequiel 1"}, {t: "Ezequiel 2"}, {t: "Ezequiel 3"}, {t: "Ezequiel 4"},
+        {t: "Ezequiel 5"}, {t: "Ezequiel 6"}, {t: "Ezequiel 7"}, {t: "Ezequiel 8"},
+        {t: "Ezequiel 9"}, {t: "Ezequiel 10"}, {t: "Ezequiel 11"}, {t: "Ezequiel 12"},
+        {t: "Ezequiel 13"}, {t: "Ezequiel 14"}, {t: "Ezequiel 15"}, {t: "Ezequiel 16"},
+        {t: "Ezequiel 17"}, {t: "Ezequiel 18"}, {t: "Ezequiel 19"}, {t: "Ezequiel 20"},
+        {t: "Ezequiel 21"}, {t: "Ezequiel 22"}, {t: "Ezequiel 23"}, {t: "Ezequiel 24"},
+        {t: "Ezequiel 25"}, {t: "Ezequiel 26"}, {t: "Ezequiel 27"}, {t: "Ezequiel 28"},
+        {t: "Ezequiel 29"}, {t: "Ezequiel 30"}, {t: "Ezequiel 31"}, {t: "Ezequiel 32"},
+        {t: "Ezequiel 33"}, {t: "Ezequiel 34"}, {t: "Ezequiel 35"}, {t: "Ezequiel 36"},
+        {t: "Ezequiel 37"}, {t: "Ezequiel 38"}, {t: "Ezequiel 39"}, {t: "Ezequiel 40"},
+        {t: "Ezequiel 41"}, {t: "Ezequiel 42"}, {t: "Ezequiel 43"}, {t: "Ezequiel 44"},
+        {t: "Ezequiel 45"}, {t: "Ezequiel 46"}, {t: "Ezequiel 47"}, {t: "Ezequiel 48"},
+        {t: "Daniel 1"}, {t: "Daniel 2"}, {t: "Daniel 3"}, {t: "Daniel 4"},
+        {t: "Daniel 5"}, {t: "Daniel 6"}, {t: "Daniel 7"}, {t: "Daniel 8"},
+        {t: "Daniel 9"}, {t: "Daniel 10"}, {t: "Daniel 11"}, {t: "Daniel 12"},
+
+        // --- FASE 3: PÓS-EXÍLIO ---
+        {t: "Esdras 1"}, {t: "Esdras 2"}, {t: "Esdras 3"}, {t: "Esdras 4"},
+        {t: "Esdras 5"}, {t: "Esdras 6"}, {t: "Salmos 137"}, {t: "Ageu 1"},
+        {t: "Ageu 2"}, {t: "Zacarias 1"}, {t: "Zacarias 2"}, {t: "Zacarias 3"},
+        {t: "Zacarias 4"}, {t: "Zacarias 5"}, {t: "Zacarias 6"}, {t: "Zacarias 7"},
+        {t: "Zacarias 8"}, {t: "Zacarias 9"}, {t: "Zacarias 10"}, {t: "Zacarias 11"},
+        {t: "Zacarias 12"}, {t: "Zacarias 13"}, {t: "Zacarias 14"}, {t: "Ester 1"},
+        {t: "Ester 2"}, {t: "Ester 3"}, {t: "Ester 4"}, {t: "Ester 5"},
+        {t: "Ester 6"}, {t: "Ester 7"}, {t: "Ester 8"}, {t: "Ester 9"},
+        {t: "Ester 10"}, {t: "Esdras 7"}, {t: "Esdras 8"}, {t: "Esdras 9"},
+        {t: "Esdras 10"}, {t: "Neemias 1"}, {t: "Neemias 2"}, {t: "Neemias 3"},
+        {t: "Neemias 4"}, {t: "Neemias 5"}, {t: "Neemias 6"}, {t: "Neemias 7"},
+        {t: "Neemias 8"}, {t: "Neemias 9"}, {t: "Neemias 10"}, {t: "Neemias 11"},
+        {t: "Neemias 12"}, {t: "Neemias 13"}, {t: "Malaquias 1"}, {t: "Malaquias 2"},
+        {t: "Malaquias 3"}, {t: "Malaquias 4"}, {t: "Salmo 1 e 150 (Conclusão)"},
+    ];
+
+    const PLANS = {
+        standard: { data: planStandard, subtitle: 'Bíblia Toda em 365 Dias' },
+        oneChapter: { data: planOneChapter, subtitle: 'Bíblia Toda • 1 Capítulo por Dia' }
+    };
+
     // --- ESTADO E CONFIGURAÇÃO ---
-    const appKey = 'biblePlan365_v4_chronoJesus'; // Chave nova para não misturar
-    
+    const appKey = 'biblePlan_v6_multiModo';
+    const legacyKey = 'biblePlan365_v4_chronoJesus'; // formato usado antes de existir o modo "1 capítulo por dia"
+
     // Calcula 1 de Dezembro do ano atual
     const now = new Date();
     const currentYear = now.getFullYear();
     const defaultStart = `${currentYear}-12-01`;
 
-    let currentState = JSON.parse(localStorage.getItem(appKey)) || {
-        startDate: defaultStart, 
-        completed: []
-    };
+    let currentState = JSON.parse(localStorage.getItem(appKey));
+
+    if (!currentState) {
+        // Importa progresso do formato antigo (só existia o plano padrão) sem perder nada
+        const legacyRaw = localStorage.getItem(legacyKey);
+        const legacyState = legacyRaw ? JSON.parse(legacyRaw) : null;
+        currentState = {
+            startDate: (legacyState && legacyState.startDate) || defaultStart,
+            mode: 'standard',
+            completedStandard: (legacyState && legacyState.completed) || [],
+            completedOneChapter: []
+        };
+        localStorage.setItem(appKey, JSON.stringify(currentState));
+    }
+
+    function getPlan() {
+        return PLANS[currentState.mode].data;
+    }
+    function getCompleted() {
+        return currentState.mode === 'standard' ? currentState.completedStandard : currentState.completedOneChapter;
+    }
+    function setCompleted(arr) {
+        if (currentState.mode === 'standard') currentState.completedStandard = arr;
+        else currentState.completedOneChapter = arr;
+    }
+
+    const MODE_BTN_ACTIVE = "flex-1 py-2 px-2 rounded-lg text-sm font-semibold border transition-colors bg-emerald-600 text-white border-emerald-600";
+    const MODE_BTN_INACTIVE = "flex-1 py-2 px-2 rounded-lg text-sm font-semibold border transition-colors bg-white text-gray-600 border-gray-300 hover:border-emerald-400";
 
     // DOM Elements
     const listEl = document.getElementById('readingList');
@@ -242,9 +609,28 @@
     const progressBar = document.getElementById('progressBar');
     const progressText = document.getElementById('progressText');
     const settingsPanel = document.getElementById('settingsPanel');
+    const appSubtitle = document.getElementById('appSubtitle');
+    const modeStandardBtn = document.getElementById('modeStandardBtn');
+    const modeOneChapterBtn = document.getElementById('modeOneChapterBtn');
+
+    function updateModeUI() {
+        const isStandard = currentState.mode === 'standard';
+        modeStandardBtn.className = isStandard ? MODE_BTN_ACTIVE : MODE_BTN_INACTIVE;
+        modeOneChapterBtn.className = !isStandard ? MODE_BTN_ACTIVE : MODE_BTN_INACTIVE;
+        appSubtitle.innerText = PLANS[currentState.mode].subtitle;
+    }
+
+    window.setMode = function(mode) {
+        if (currentState.mode === mode) return;
+        currentState.mode = mode;
+        localStorage.setItem(appKey, JSON.stringify(currentState));
+        updateModeUI();
+        render();
+    };
 
     // Inicialização
     startInput.value = currentState.startDate;
+    updateModeUI();
     render();
 
     // --- FUNÇÕES ---
@@ -271,8 +657,11 @@
         const todayReal = new Date();
         todayReal.setHours(12,0,0,0);
 
+        const plan = getPlan();
+        const completed = getCompleted();
+
         plan.forEach((item, index) => {
-            const isDone = currentState.completed.includes(index);
+            const isDone = completed.includes(index);
             if (isDone) completedCount++;
 
             const currentDayDate = new Date(startDateObj);
@@ -319,10 +708,11 @@
     }
 
     window.toggleDay = function(index) {
-        if (currentState.completed.includes(index)) {
-            currentState.completed = currentState.completed.filter(i => i !== index);
+        const completed = getCompleted();
+        if (completed.includes(index)) {
+            setCompleted(completed.filter(i => i !== index));
         } else {
-            currentState.completed.push(index);
+            setCompleted([...completed, index]);
             if (navigator.vibrate) navigator.vibrate(20);
         }
         localStorage.setItem(appKey, JSON.stringify(currentState));
@@ -334,8 +724,8 @@
     };
 
     window.resetProgress = function() {
-        if(confirm('Isso apagará todas as leituras marcadas. Continuar?')) {
-            currentState.completed = [];
+        if(confirm('Isso apagará todas as leituras marcadas neste modo. Continuar?')) {
+            setCompleted([]);
             localStorage.setItem(appKey, JSON.stringify(currentState));
             render();
             toggleSettings();
