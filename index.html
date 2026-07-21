@@ -42,7 +42,7 @@
         <div class="max-w-md mx-auto px-4 py-3 flex justify-between items-center">
             <div>
                 <h1 class="text-xl font-bold text-gray-800">Leitura Bíblica</h1>
-                <p class="text-xs text-emerald-600 font-semibold">Bíblia Toda • 1 Capítulo por Dia</p>
+                <p id="appSubtitle" class="text-xs text-emerald-600 font-semibold">Bíblia Toda em 365 Dias</p>
             </div>
             <button onclick="toggleSettings()" class="text-gray-500 hover:text-emerald-600 p-2">
                 <i class="fas fa-cog text-xl"></i>
@@ -61,6 +61,12 @@
                 <i class="fas fa-sliders-h text-emerald-500"></i> Ajustes
             </h2>
             
+            <label class="block text-sm font-medium text-gray-700 mb-1">Modo de Leitura</label>
+            <div class="flex gap-2 mb-4">
+                <button id="modeStandardBtn" onclick="setMode('standard')" class="flex-1 py-2 px-2 rounded-lg text-sm font-semibold border transition-colors">Padrão (2-3 cap/dia)</button>
+                <button id="modeOneChapterBtn" onclick="setMode('oneChapter')" class="flex-1 py-2 px-2 rounded-lg text-sm font-semibold border transition-colors">1 Capítulo/Dia</button>
+            </div>
+
             <label class="block text-sm font-medium text-gray-700 mb-1">Data de Início</label>
             <input type="date" id="startDateInput" class="w-full border-gray-300 border rounded-lg p-3 mb-4 focus:ring-2 focus:ring-emerald-500 outline-none text-gray-700 font-mono">
             
@@ -101,8 +107,128 @@
     </div>
 
 <script>
-    // --- DADOS DO PLANO (HARMONIA DOS EVANGELHOS + RESTANTE) ---
-    const rawPlan = [
+    // --- PLANO PADRÃO (2-3 capítulos por dia, ~295 dias) ---
+    const planStandard = [
+        // --- VIDA DE JESUS CRONOLÓGICA (HARMONIA) ---
+        {t: "A Eternidade e o Nascimento: Jo 1, Lc 1, Mt 1"},
+        {t: "Infância e Juventude: Lc 2, Mt 2"},
+        {t: "O Precursor e o Batismo: Mt 3, Mc 1, Lc 3"},
+        {t: "Início do Ministério e Tentação: Mt 4, Lc 4, Jo 1:19-51"},
+        {t: "Primeiro Milagre e Judeia: Jo 2, Jo 3 (Nicodemos)"},
+        {t: "Samaria e Início na Galileia: Jo 4, Lc 5"},
+        {t: "Autoridade e Chamados: Mc 2, Jo 5, Mt 12:1-21"},
+        {t: "Escolha dos 12 e Sermão do Monte (I): Mc 3, Lc 6, Mt 5"},
+        {t: "Sermão do Monte (II): Mt 6, Mt 7"},
+        {t: "Milagres em Cafarnaum e Naim: Mt 8, Lc 7"},
+        {t: "Mulheres e Parábolas do Reino: Lc 8, Mt 13"},
+        {t: "A Tempestade e o Endemoniado: Mc 4, Mc 5, Mt 9"},
+        {t: "Envio dos 12 e Morte de João: Mt 10, Mt 14, Mc 6"},
+        {t: "O Pão da Vida: Lc 9, Jo 6"},
+        {t: "Tradições e a Fé da Cananeia: Mt 15, Mc 7"},
+        {t: "A Grande Confissão de Pedro: Mt 16, Mc 8"},
+        {t: "A Transfiguração: Mt 17, Mc 9, Lc 9:28-62"},
+        {t: "Festa dos Tabernáculos e Perdão: Jo 7, Jo 8"},
+        {t: "O Cego de Nascença e o Bom Pastor: Jo 9, Jo 10"},
+        {t: "Envio dos 70 e Oração: Lc 10, Lc 11"},
+        {t: "Avisos e Arrependimento: Lc 12, Lc 13"},
+        {t: "Parábolas Perdidas: Lc 14, Lc 15, Lc 16"},
+        {t: "Lázaro e os Leprosos: Lc 17, Jo 11"},
+        {t: "Jovem Rico, Zaqueu e Bartimeu: Mt 19, Mt 20, Lc 18, Lc 19"},
+        {t: "Entrada Triunfal e Figueira: Mt 21, Mc 11, Jo 12"},
+        {t: "Controvérsias no Templo: Mt 22, Mt 23, Mc 12, Lc 20"},
+        {t: "O Sermão Profético (O Fim): Mt 24, Mt 25, Mc 13, Lc 21"},
+        {t: "A Última Ceia: Mt 26, Mc 14, Lc 22"},
+        {t: "O Discurso do Adeus: Jo 13, Jo 14, Jo 15, Jo 16, Jo 17"},
+        {t: "Getsêmani, Prisão e Julgamento: Jo 18, Jo 19, Mt 27:1-31"},
+        {t: "Crucificação e Morte: Mc 15, Lc 23, Mt 27:32-66"},
+        {t: "A Ressurreição: Mt 28, Mc 16, Lc 24, Jo 20"},
+        {t: "A Grande Comissão e Ascensão: Jo 21, Atos 1"},
+
+        // --- FASE 1: NT (A IGREJA E CARTAS) ---
+        {t: "O Nascimento da Igreja: Atos 2-4"}, 
+        {t: "Estêvão e a Perseguição: Atos 5-8"}, 
+        {t: "Conversão de Saulo e Cornélio: Atos 9-11"}, 
+        {t: "Primeira Viagem Missionária: Atos 12-14"}, 
+        {t: "O Concílio de Jerusalém: Atos 15-17"}, 
+        {t: "Corinto e Éfeso: Atos 18-20"}, 
+        {t: "Prisão de Paulo: Atos 21-24"}, 
+        {t: "Viagem a Roma e Naufrágio: Atos 25-28"},
+        {t: "Romanos 1-3"}, {t: "Romanos 4-7"}, {t: "Romanos 8-10"}, {t: "Romanos 11-13"}, {t: "Romanos 14-16"},
+        {t: "1 Coríntios 1-4"}, {t: "1 Coríntios 5-9"}, {t: "1 Coríntios 10-13"}, {t: "1 Coríntios 14-16"},
+        {t: "2 Coríntios 1-4"}, {t: "2 Coríntios 5-9"}, {t: "2 Coríntios 10-13"},
+        {t: "Gálatas 1-3"}, {t: "Gálatas 4-6"}, {t: "Efésios 1-3"}, {t: "Efésios 4-6"},
+        {t: "Filipenses 1-4"}, {t: "Colossenses 1-4"},
+        {t: "1 Tess 1-5"}, {t: "2 Tess 1-3"}, {t: "1 Timóteo 1-6"}, {t: "2 Timóteo, Tito"}, {t: "Filemom, Hebreus 1-4"},
+        {t: "Hebreus 5-9"}, {t: "Hebreus 10-13"}, {t: "Tiago 1-5"},
+        {t: "1 Pedro 1-5"}, {t: "2 Pedro, Judas"}, {t: "1, 2, 3 João"},
+        {t: "Apocalipse 1-5"}, {t: "Apocalipse 6-10"}, {t: "Apocalipse 11-15"}, {t: "Apocalipse 16-19"}, {t: "Apocalipse 20-22"},
+
+        // --- FASE 2: PENTATEUCO + JÓ ---
+        {t: "Gênesis 1-3 (Criação e Queda)"}, {t: "Gênesis 4-7 (Dilúvio)"}, {t: "Gênesis 8-11 (Babel)"}, {t: "Gênesis 12-15 (Abraão)"}, {t: "Gênesis 16-19"}, {t: "Gênesis 20-23"}, {t: "Gênesis 24-26"}, {t: "Gênesis 27-29 (Jacó)"}, {t: "Gênesis 30-32"}, {t: "Gênesis 33-36"}, {t: "Gênesis 37-39 (José)"}, {t: "Gênesis 40-42"}, {t: "Gênesis 43-46"}, {t: "Gênesis 47-50"},
+        {t: "Jó 1-5"}, {t: "Jó 6-10"}, {t: "Jó 11-15"}, {t: "Jó 16-21"}, {t: "Jó 22-28"}, {t: "Jó 29-33"}, {t: "Jó 34-37"}, {t: "Jó 38-42"},
+        {t: "Êxodo 1-4"}, {t: "Êxodo 5-8"}, {t: "Êxodo 9-11"}, {t: "Êxodo 12-14 (Páscoa)"}, {t: "Êxodo 15-18"}, {t: "Êxodo 19-21 (A Lei)"}, {t: "Êxodo 22-24"}, {t: "Êxodo 25-27"}, {t: "Êxodo 28-30"}, {t: "Êxodo 31-33"}, {t: "Êxodo 34-36"}, {t: "Êxodo 37-40"},
+        {t: "Levítico 1-4"}, {t: "Levítico 5-7"}, {t: "Levítico 8-10"}, {t: "Levítico 11-13"}, {t: "Levítico 14-15"}, {t: "Levítico 16-18"}, {t: "Levítico 19-22"}, {t: "Levítico 23-25"}, {t: "Levítico 26-27"},
+        {t: "Números 1-2"}, {t: "Números 3-4"}, {t: "Números 5-6"}, {t: "Números 7"}, {t: "Números 8-10"}, {t: "Números 11-13"}, {t: "Números 14-15"}, {t: "Números 16-18"}, {t: "Números 19-21"}, {t: "Números 22-24 (Balaão)"}, {t: "Números 25-27"}, {t: "Números 28-30"}, {t: "Números 31-33"}, {t: "Números 34-36"},
+        {t: "Deuteronômio 1-2"}, {t: "Deuteronômio 3-4"}, {t: "Deuteronômio 5-7"}, {t: "Deuteronômio 8-10"}, {t: "Deuteronômio 11-13"}, {t: "Deuteronômio 14-17"}, {t: "Deuteronômio 18-21"}, {t: "Deuteronômio 22-25"}, {t: "Deuteronômio 26-28"}, {t: "Deuteronômio 29-31"}, {t: "Deuteronômio 32-34"},
+
+        // --- FASE 3: HISTÓRIA CRONOLÓGICA (Conquista e Juízes) ---
+        {t: "Josué 1-4"}, {t: "Josué 5-8"}, {t: "Josué 9-12"}, {t: "Josué 13-17"}, {t: "Josué 18-21"}, {t: "Josué 22-24"},
+        {t: "Juízes 1-3"}, {t: "Juízes 4-6 (Débora)"}, {t: "Juízes 7-9 (Gideão)"}, {t: "Juízes 10-12 (Jefté)"}, {t: "Juízes 13-16 (Sansão)"}, {t: "Juízes 17-21"},
+        {t: "Rute 1-4"},
+
+        // --- FASE 3: REINO UNIDO (Davi: Samuel, Cronicas, Salmos) ---
+        {t: "1 Samuel 1-3 (Samuel)"}, {t: "1 Samuel 4-7"}, {t: "1 Samuel 8-12 (Saul)"}, {t: "1 Samuel 13-15"}, 
+        {t: "1 Samuel 16-18, Sal 11, 59 (Davi Ungido)"}, {t: "1 Sam 19-21, Sal 23, 34, 56"}, {t: "1 Sam 22-24, Sal 52, 57, 142"}, {t: "1 Sam 25-27, Sal 54, 63"}, {t: "1 Sam 28-31, Sal 18 (Morte de Saul)"},
+        {t: "2 Sam 1-3, Sal 101"}, {t: "2 Sam 4-6, Sal 68, 132, 133"}, {t: "1 Crônicas 1-3 (Genealogias)"}, {t: "1 Crônicas 4-6"}, {t: "1 Crônicas 7-9"}, {t: "1 Crôn 10-12, Sal 108"}, {t: "1 Crôn 13-16, Sal 24, 96 (Arca)"},
+        {t: "Salmos 1-15 (Orações)"}, {t: "Salmos 16-30"}, {t: "Salmos 31-41"}, {t: "2 Sam 7-9, 1 Crôn 17-18"}, 
+        {t: "2 Sam 10, 1 Crôn 19, Sal 20"}, {t: "2 Sam 11-12, 1 Crôn 20, Sal 32, 51 (Bate-Seba)"}, 
+        {t: "2 Sam 13-15, Sal 3, 61 (Absalão)"}, {t: "2 Sam 16-18, Sal 7, 12, 13"}, {t: "2 Sam 19-21, Sal 55"}, {t: "2 Sam 22-24, Sal 4, 42"}, 
+        {t: "1 Crôn 21-23, Sal 95, 97-99"}, {t: "1 Crôn 24-26"}, {t: "1 Crôn 27-29, Sal 127"},
+        {t: "Salmos 43-60"}, {t: "Salmos 61-75"}, {t: "Salmos 76-89"}, {t: "Salmos 90-106"}, {t: "Salmos 107-118"}, {t: "Salmos 119:1-88"}, {t: "Salmos 119:89-176"}, {t: "Salmos 120-134"}, {t: "Salmos 135-150"},
+
+        // --- FASE 3: REINO UNIDO (Salomão) ---
+        {t: "1 Reis 1-2, Sal 37, 71, 94"}, {t: "1 Reis 3-4, 2 Crôn 1, Sal 72"}, 
+        {t: "Provérbios 1-4"}, {t: "Provérbios 5-9"}, {t: "Provérbios 10-13"}, {t: "Provérbios 14-17"}, {t: "Provérbios 18-21"}, {t: "Provérbios 22-24"}, {t: "Provérbios 25-29"}, {t: "Provérbios 30-31"}, 
+        {t: "Cânticos 1-4"}, {t: "Cânticos 5-8"}, 
+        {t: "Eclesiastes 1-6"}, {t: "Eclesiastes 7-12"},
+        {t: "1 Reis 5-7, 2 Crôn 2-4 (Templo)"}, {t: "1 Reis 8, 2 Crôn 5-7"}, {t: "1 Reis 9-11, 2 Crôn 8-9"},
+
+        // --- FASE 3: REINO DIVIDIDO E PROFETAS (Cronológico) ---
+        {t: "1 Reis 12-14, 2 Crôn 10-12 (Cisma)"}, {t: "1 Reis 15-16, 2 Crôn 13-16"}, 
+        {t: "1 Reis 17-19 (Elias)"}, {t: "1 Reis 20-22, 2 Crôn 18"},
+        {t: "Obadias, 2 Crôn 17, 19-20"},
+        {t: "2 Reis 1-4 (Eliseu)"}, {t: "2 Reis 5-8 (Eliseu)"}, {t: "2 Reis 9-11, 2 Crôn 21-23"},
+        {t: "Joel 1-3"}, {t: "2 Reis 12-13, 2 Crôn 24"}, {t: "Jonas 1-4"}, 
+        {t: "2 Reis 14, 2 Crôn 25"}, {t: "Amós 1-5"}, {t: "Amós 6-9"}, 
+        {t: "Oseias 1-5"}, {t: "Oseias 6-10"}, {t: "Oseias 11-14"},
+        {t: "2 Reis 15-16, 2 Crôn 26-27"},
+        {t: "Isaías 1-5"}, {t: "Isaías 6-10 (O Chamado)"}, {t: "Isaías 11-16"}, {t: "Miqueias 1-7"},
+        {t: "Isaías 17-23"}, {t: "Isaías 24-29"}, {t: "Isaías 30-35"}, 
+        {t: "2 Reis 17, 2 Crôn 28 (Queda de Israel)"}, 
+        {t: "2 Reis 18-19, Sal 46, 80 (Ezequias)"}, {t: "Isaías 36-39"}, {t: "Isaías 40-44"}, {t: "Isaías 45-50"}, {t: "Isaías 51-55"}, {t: "Isaías 56-61"}, {t: "Isaías 62-66"},
+        {t: "2 Reis 20-21, 2 Crôn 29-33"}, {t: "Naum 1-3"}, {t: "Sofonias 1-3"},
+        {t: "2 Reis 22-23, 2 Crôn 34-35 (Josias)"},
+        {t: "Jeremias 1-4"}, {t: "Jeremias 5-8"}, {t: "Jeremias 9-12"}, {t: "Jeremias 13-17"}, {t: "Habacuque 1-3"},
+        {t: "Jeremias 18-22"}, {t: "Jeremias 23-25"}, {t: "Jeremias 26-29"}, {t: "Jeremias 30-32"}, {t: "Jeremias 33-36"}, {t: "Jeremias 37-39"},
+        {t: "2 Reis 24-25, 2 Crôn 36 (Cativeiro)"}, {t: "Jeremias 40-45"}, {t: "Jeremias 46-49"}, {t: "Jeremias 50-52"},
+        {t: "Lamentações 1-5"},
+
+        // --- FASE 3: EXÍLIO ---
+        {t: "Ezequiel 1-4"}, {t: "Ezequiel 5-9"}, {t: "Ezequiel 10-13"}, {t: "Ezequiel 14-17"}, {t: "Ezequiel 18-20"}, {t: "Ezequiel 21-23"}, {t: "Ezequiel 24-27"}, {t: "Ezequiel 28-31"}, {t: "Ezequiel 32-34"}, {t: "Ezequiel 35-38"}, {t: "Ezequiel 39-42"}, {t: "Ezequiel 43-45"}, {t: "Ezequiel 46-48"},
+        {t: "Daniel 1-3"}, {t: "Daniel 4-6 (Cova dos Leões)"}, {t: "Daniel 7-9"}, {t: "Daniel 10-12"},
+
+        // --- FASE 3: PÓS-EXÍLIO ---
+        {t: "Esdras 1-3"}, {t: "Esdras 4-6, Sal 137"},
+        {t: "Ageu 1-2"}, {t: "Zacarias 1-5"}, {t: "Zacarias 6-9"}, {t: "Zacarias 10-14"},
+        {t: "Ester 1-5"}, {t: "Ester 6-10"},
+        {t: "Esdras 7-10"},
+        {t: "Neemias 1-5"}, {t: "Neemias 6-9"}, {t: "Neemias 10-13"},
+        {t: "Malaquias 1-4"},
+        {t: "Salmo 1 e 150 (Conclusão)"}
+    ];
+
+    // --- PLANO DE 1 CAPÍTULO POR DIA (mesma cronologia, ~1231 dias) ---
+    const planOneChapter = [
 
         // --- VIDA DE JESUS CRONOLÓGICA (HARMONIA DOS EVANGELHOS) ---
         {t: "João 1"}, {t: "Lucas 1"}, {t: "Mateus 1"}, {t: "Lucas 2"},
@@ -434,20 +560,48 @@
         {t: "Malaquias 3"}, {t: "Malaquias 4"}, {t: "Salmo 1 e 150 (Conclusão)"},
     ];
 
-    const plan = [...rawPlan];
-    
+    const PLANS = {
+        standard: { data: planStandard, subtitle: 'Bíblia Toda em 365 Dias' },
+        oneChapter: { data: planOneChapter, subtitle: 'Bíblia Toda • 1 Capítulo por Dia' }
+    };
+
     // --- ESTADO E CONFIGURAÇÃO ---
-    const appKey = 'biblePlan_v5_umCapituloPorDia'; // Chave nova: plano de 1 capítulo/dia (não misturar com progresso do plano antigo)
-    
+    const appKey = 'biblePlan_v6_multiModo';
+    const legacyKey = 'biblePlan365_v4_chronoJesus'; // formato usado antes de existir o modo "1 capítulo por dia"
+
     // Calcula 1 de Dezembro do ano atual
     const now = new Date();
     const currentYear = now.getFullYear();
     const defaultStart = `${currentYear}-12-01`;
 
-    let currentState = JSON.parse(localStorage.getItem(appKey)) || {
-        startDate: defaultStart, 
-        completed: []
-    };
+    let currentState = JSON.parse(localStorage.getItem(appKey));
+
+    if (!currentState) {
+        // Importa progresso do formato antigo (só existia o plano padrão) sem perder nada
+        const legacyRaw = localStorage.getItem(legacyKey);
+        const legacyState = legacyRaw ? JSON.parse(legacyRaw) : null;
+        currentState = {
+            startDate: (legacyState && legacyState.startDate) || defaultStart,
+            mode: 'standard',
+            completedStandard: (legacyState && legacyState.completed) || [],
+            completedOneChapter: []
+        };
+        localStorage.setItem(appKey, JSON.stringify(currentState));
+    }
+
+    function getPlan() {
+        return PLANS[currentState.mode].data;
+    }
+    function getCompleted() {
+        return currentState.mode === 'standard' ? currentState.completedStandard : currentState.completedOneChapter;
+    }
+    function setCompleted(arr) {
+        if (currentState.mode === 'standard') currentState.completedStandard = arr;
+        else currentState.completedOneChapter = arr;
+    }
+
+    const MODE_BTN_ACTIVE = "flex-1 py-2 px-2 rounded-lg text-sm font-semibold border transition-colors bg-emerald-600 text-white border-emerald-600";
+    const MODE_BTN_INACTIVE = "flex-1 py-2 px-2 rounded-lg text-sm font-semibold border transition-colors bg-white text-gray-600 border-gray-300 hover:border-emerald-400";
 
     // DOM Elements
     const listEl = document.getElementById('readingList');
@@ -455,9 +609,28 @@
     const progressBar = document.getElementById('progressBar');
     const progressText = document.getElementById('progressText');
     const settingsPanel = document.getElementById('settingsPanel');
+    const appSubtitle = document.getElementById('appSubtitle');
+    const modeStandardBtn = document.getElementById('modeStandardBtn');
+    const modeOneChapterBtn = document.getElementById('modeOneChapterBtn');
+
+    function updateModeUI() {
+        const isStandard = currentState.mode === 'standard';
+        modeStandardBtn.className = isStandard ? MODE_BTN_ACTIVE : MODE_BTN_INACTIVE;
+        modeOneChapterBtn.className = !isStandard ? MODE_BTN_ACTIVE : MODE_BTN_INACTIVE;
+        appSubtitle.innerText = PLANS[currentState.mode].subtitle;
+    }
+
+    window.setMode = function(mode) {
+        if (currentState.mode === mode) return;
+        currentState.mode = mode;
+        localStorage.setItem(appKey, JSON.stringify(currentState));
+        updateModeUI();
+        render();
+    };
 
     // Inicialização
     startInput.value = currentState.startDate;
+    updateModeUI();
     render();
 
     // --- FUNÇÕES ---
@@ -484,8 +657,11 @@
         const todayReal = new Date();
         todayReal.setHours(12,0,0,0);
 
+        const plan = getPlan();
+        const completed = getCompleted();
+
         plan.forEach((item, index) => {
-            const isDone = currentState.completed.includes(index);
+            const isDone = completed.includes(index);
             if (isDone) completedCount++;
 
             const currentDayDate = new Date(startDateObj);
@@ -532,10 +708,11 @@
     }
 
     window.toggleDay = function(index) {
-        if (currentState.completed.includes(index)) {
-            currentState.completed = currentState.completed.filter(i => i !== index);
+        const completed = getCompleted();
+        if (completed.includes(index)) {
+            setCompleted(completed.filter(i => i !== index));
         } else {
-            currentState.completed.push(index);
+            setCompleted([...completed, index]);
             if (navigator.vibrate) navigator.vibrate(20);
         }
         localStorage.setItem(appKey, JSON.stringify(currentState));
@@ -547,8 +724,8 @@
     };
 
     window.resetProgress = function() {
-        if(confirm('Isso apagará todas as leituras marcadas. Continuar?')) {
-            currentState.completed = [];
+        if(confirm('Isso apagará todas as leituras marcadas neste modo. Continuar?')) {
+            setCompleted([]);
             localStorage.setItem(appKey, JSON.stringify(currentState));
             render();
             toggleSettings();
